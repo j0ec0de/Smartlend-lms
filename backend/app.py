@@ -1,8 +1,13 @@
 from flask import Flask
-from extensions import db
+from extensions import db, migrate
 from flask_cors import CORS
 from config import Config
 
+from models.user import User
+from models.loan_applications import LoanApplication
+from models.document import Document
+from models.approval import Approval
+from models.loan_repayment import LoanRepayment
 
 
 def create_app():
@@ -11,6 +16,8 @@ def create_app():
 
     CORS(app)
     db.init_app(app)
+
+    migrate.init_app(app, db)
 
     # Import routes
     from routes.auth import auth_bp
