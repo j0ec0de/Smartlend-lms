@@ -10,3 +10,6 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), default="user")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    loan_applications = db.relationship("LoanApplication", backref="user", lazy=True)
