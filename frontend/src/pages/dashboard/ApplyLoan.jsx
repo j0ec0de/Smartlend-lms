@@ -31,7 +31,7 @@ export default function ApplyLoan() {
                 credit_history: parseFloat(data.credit_history)
             };
             await api.post('/loans/apply', payload);
-            navigate('/');
+            navigate('/dashboard');
         } catch (error) {
             if (error.response?.data?.message) {
                 setServerError(error.response.data.message);
@@ -122,7 +122,7 @@ export default function ApplyLoan() {
                         )}
 
                         <div className="flex justify-end pt-4">
-                            <Button type="button" variant="secondary" className="mr-3" onClick={() => navigate('/')}>
+                            <Button type="button" variant="secondary" className="mr-3" onClick={() => navigate('/dashboard')}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>

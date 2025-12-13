@@ -7,6 +7,7 @@ import UserDashboard from './pages/dashboard/UserDashboard';
 import ApplyLoan from './pages/dashboard/ApplyLoan';
 import LoanDetails from './pages/dashboard/LoanDetails';
 
+import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLoanDetails from './pages/admin/AdminLoanDetails';
 
@@ -15,7 +16,10 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          {/* Public Routes */}
+          {/* Landing Page (Public) */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Public Routes - Login/Register */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -23,12 +27,8 @@ function App() {
 
           {/* User Routes */}
           <Route element={<PrivateRoute roles={['user', 'admin']} />}>
-            {/* Note: 'admin' might also look at user dashboard to see how it looks? 
-                Usually admin has their own VIEW. 
-                But for now let's strict check roles or allow admin to access "/" if generic.
-                Let's stick to plan: "/" is User Dashboard.
-            */}
-            <Route path="/" element={<UserDashboard />} />
+            {/* User Dashboard moving to /dashboard */}
+            <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/apply-loan" element={<ApplyLoan />} />
             <Route path="/loan/:id" element={<LoanDetails />} />
           </Route>

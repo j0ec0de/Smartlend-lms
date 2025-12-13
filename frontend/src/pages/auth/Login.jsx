@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
@@ -18,11 +19,8 @@ export default function Login() {
         setServerError('');
         try {
             await login(data.email, data.password);
-            navigate('/');
+            navigate('/dashboard');
         } catch (error) {
-            // Backend returns response tuple, axios might wrap it. 
-            // Need to check backend return shape. 
-            // Flask jsonify(response), status
             if (error.response?.data?.message) {
                 setServerError(error.response.data.message);
             } else {
@@ -34,7 +32,14 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
+                <Link to="/" className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors font-medium">
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Back to Home
+                </Link>
+            </div>
+
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
                     Sign in to your account

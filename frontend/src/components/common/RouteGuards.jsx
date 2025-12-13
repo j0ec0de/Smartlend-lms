@@ -9,7 +9,7 @@ export const PrivateRoute = ({ roles = [] }) => {
     }
 
     if (roles.length > 0 && !roles.includes(user.role)) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/dashboard" replace />;
     }
 
     return <Outlet />;
@@ -18,7 +18,9 @@ export const PrivateRoute = ({ roles = [] }) => {
 export const PublicRoute = () => {
     const { user } = useAuth();
     if (user) {
-        return <Navigate to="/" replace />;
+        // Redirect to dashboard (or admin) if logged in.
+        if (user.role === 'admin') return <Navigate to="/admin" replace />;
+        return <Navigate to="/dashboard" replace />;
     }
     return <Outlet />;
 }
