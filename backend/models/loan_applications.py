@@ -10,6 +10,8 @@ class LoanApplication(db.Model):
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     tenure_months = db.Column(db.Integer, nullable=False)
     interest_rate = db.Column(db.Float, nullable=False)
+    monthly_salary = db.Column(db.Float, nullable=False)
+    credit_history = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default="pending") 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
