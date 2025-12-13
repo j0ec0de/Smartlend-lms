@@ -1,5 +1,5 @@
 import os
-from flask import current_app
+from flask import current_app, send_from_directory
 from werkzeug.utils import secure_filename
 from utils.jwt_utils import get_jwt_identity
 from models.document import Document
@@ -56,6 +56,32 @@ def upload_document(request, loan_id):
         
         else:
             return {"error": "File type not allowed"}, 400
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+    
+def get_document_file(document_id):
+    try:
+        # 1. Find the document record in DB
+        doc = Document.query.get(document_id)
+        if not doc:
+            return {"error": "Document not found"}, 404
+
+        # 2. Get the folder and filename
+        # We assume file_path stored is absolute or relative. 
+        # Safer to rely on filename + configured upload folder.
+        directory = current_app.config['UPLOAD_FOLDER']
+        filename = os.path.basename(doc.file_path)  # Ensure this matches what you saved in DB
+
+        # 3. Check if file actually exists on disk
+        full_path = os.path.join(directory, filename)
+        if not os.path.exists(full_path):
+             return {"error": "File missing from server"}, 404
+
+        # 4. Serve the file
+        # as_attachment=False means it will open in the browser (good for PDFs/Images)
+        # as_attachment=True means it will force a download
+        return send_from_directory(directory, filename, as_attachment=False)
 
     except Exception as e:
         return {"error": str(e)}, 500

@@ -23,10 +23,12 @@ def create_app():
     from routes.auth_routes import auth_bp
     from routes.loan_routes import loan_bp
     from routes.document_routes import document_bp
+    from routes.admin_routes import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(loan_bp, url_prefix="/api/loans")
     app.register_blueprint(document_bp, url_prefix="/api/documents")
+    app.register_blueprint(admin_bp, url_prefix="/api/admin")
 
     return app
 
