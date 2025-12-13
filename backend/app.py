@@ -20,7 +20,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # Import routes
-    from routes.auth import auth_bp
+    from routes.auth_routes import auth_bp
     # from routes.loan import loan_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
