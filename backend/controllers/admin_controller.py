@@ -3,47 +3,32 @@ from dateutil.relativedelta import relativedelta
 from models.loan_repayment import LoanRepayment
 from models.loan_applications import LoanApplication
 from models.document import Document
+from models.user import User
 from extensions import db
 
 def get_all_loans():
     try:
-        # Fetch all loans, ordered by latest first
-        loans = LoanApplication.query.order_by(LoanApplication.created_at.desc()).all()
+        # Fetch all loans, ordered by latest first, joined with User to get names
+        loans = db.session.query(LoanApplication, User.name).join(User, LoanApplication.user_id == User.id).order_by(LoanApplication.created_at.desc()).all()
         
         output = []
-        for loan in loans:
+        for loan, user_name in loans:
             output.append({
                 "id": loan.id,
                 "user_id": loan.user_id,
+                "user_name": user_name,
                 "amount": loan.amount,
                 "type": loan.loan_type,
                 "status": loan.status,
                 "risk_score": f"Salary: {loan.monthly_salary}, Credit: {loan.credit_history}",
-                "date": loan.created_at
+                "date": loan.created_at.isoformat(),
+                "documents": [{"id": d.id, "name": d.file_name} for d in loan.documents]
             })
         return output, 200
     except Exception as e:
         return {"error": str(e)}, 500
 
-def update_loan_status(data, loan_id):
-    try:
-        loan = LoanApplication.query.get(loan_id)
-        if not loan:
-            return {"error": "Loan not found"}, 404
 
-        # Expected data: {"status": "Approved"} or {"status": "Rejected"}
-        new_status = data.get('status')
-        
-        if new_status not in ['Approved', 'Rejected']:
-            return {"error": "Invalid status. Use 'Approved' or 'Rejected'"}, 400
-
-        loan.status = new_status
-        db.session.commit()
-
-        return {"message": f"Loan {loan_id} marked as {new_status}"}, 200
-
-    except Exception as e:
-        return {"error": str(e)}, 500
 
 # Helper Function for EMI
 def calculate_emi(principal, annual_rate, tenure_months):

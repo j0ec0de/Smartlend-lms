@@ -85,3 +85,31 @@ def get_document_file(document_id):
 
     except Exception as e:
         return {"error": str(e)}, 500
+
+def get_my_document_file(document_id):
+    try:
+        current_user = get_jwt_identity()
+        
+        # 1. Find the document record in DB
+        doc = Document.query.get(document_id)
+        if not doc:
+            return {"error": "Document not found"}, 404
+
+        # 2. Check ownership via Loan
+        if doc.loan.user_id != current_user.id:
+             return {"error": "Unauthorized"}, 403
+
+        # 3. Get the folder and filename
+        directory = current_app.config['UPLOAD_FOLDER']
+        filename = os.path.basename(doc.file_path)
+
+        # 4. Check if file actually exists on disk
+        full_path = os.path.join(directory, filename)
+        if not os.path.exists(full_path):
+             return {"error": "File missing from server"}, 404
+
+        # 5. Serve the file
+        return send_from_directory(directory, filename, as_attachment=False)
+
+    except Exception as e:
+        return {"error": str(e)}, 500

@@ -1,11 +1,15 @@
 from flask import request, jsonify
 from extensions import db
 from models.loan_applications import LoanApplication
+from models.user import User
 from utils.jwt_utils import get_jwt_identity
 
 def apply_for_loan(data): 
     try:
         current_user = get_jwt_identity()
+        user_db = User.query.get(current_user.id)
+        if user_db.role == 'admin':
+            return {"error": "Admins cannot apply for loans"}, 403
         
 
         #extract data
@@ -58,7 +62,8 @@ def get_my_loans():
                 "amount": loan.amount,
                 "status": loan.status,
                 "type": loan.loan_type,
-                "date": loan.created_at 
+                "date": loan.created_at.isoformat(),
+                "documents": [{"id": d.id, "name": d.file_name, "type": d.file_type} for d in loan.documents]
             })
         
         return output, 200

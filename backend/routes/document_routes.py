@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from utils.jwt_utils import jwt_required
 from utils.decorators import admin_required
-from controllers.document_controller import upload_document, get_document_file
+from controllers.document_controller import upload_document, get_document_file, get_my_document_file
 
 document_bp = Blueprint('documents', __name__)
 
@@ -16,3 +16,8 @@ def upload(loan_id):
 @admin_required()
 def view_file(document_id):
     return get_document_file(document_id)
+
+@document_bp.route('/my-view/<int:document_id>', methods=["GET"])
+@jwt_required
+def view_my_file(document_id):
+    return get_my_document_file(document_id)
