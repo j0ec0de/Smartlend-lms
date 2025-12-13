@@ -9,11 +9,12 @@ def create_access_token(identity, expires_minutes=60):
     """Create a JWT access token encoding the given identity (usually user id)."""
     now = datetime.utcnow()
     payload = {
-        "sub": identity,
+        "sub": str(identity),  # Convert to string
         "iat": now,
         "exp": now + timedelta(minutes=expires_minutes),
     }
-    token = jwt.encode(payload, current_app.config.get("SECRET_KEY"), algorithm="HS256")
+    secret_key = current_app.config.get("JWT_SECRET_KEY")
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
     # PyJWT may return bytes in some versions
     if isinstance(token, bytes):
         token = token.decode("utf-8")
@@ -22,7 +23,8 @@ def create_access_token(identity, expires_minutes=60):
 
 def decode_token(token):
     """Decode a token and return the payload or raise jwt exceptions."""
-    return jwt.decode(token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"])
+    secret_key = current_app.config.get("JWT_SECRET_KEY")
+    return jwt.decode(token, secret_key, algorithms=["HS256"])
 
 
 def jwt_required(fn):
@@ -52,6 +54,11 @@ def jwt_required(fn):
 
         user_id = payload.get("sub")
         if user_id is None:
+            return jsonify({"message": "Invalid token payload"}), 401
+
+        try:
+            user_id = int(user_id)  # Convert back to int
+        except (ValueError, TypeError):
             return jsonify({"message": "Invalid token payload"}), 401
 
         user = User.query.get(user_id)
