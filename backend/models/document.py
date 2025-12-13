@@ -9,6 +9,7 @@ class Document(db.Model):
 
     file_name = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(500), nullable=False)
+    file_type = db.Column(db.String(50)) # e.g., 'pdf', 'jpg'
 
     verified_status = db.Column(db.String(20), default="pending")   # pending, verified, rejected
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
