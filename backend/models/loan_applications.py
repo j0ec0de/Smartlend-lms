@@ -14,7 +14,9 @@ class LoanApplication(db.Model):
     credit_history = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default="pending") 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
+    risk_category = db.Column(db.String(20), nullable=True)
+    ai_confidence_score = db.Column(db.Float, nullable=True)
     # Relationships
 
     documents = db.relationship("Document", backref="loan", lazy=True)
