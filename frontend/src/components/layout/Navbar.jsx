@@ -29,6 +29,9 @@ export default function Navbar() {
                                         Admin Panel
                                     </Link>
                                 )}
+                                <Link to="/predict-loan" className="text-indigo-600 hover:text-indigo-800 px-3 py-2 rounded-md text-sm font-medium">
+                                    Predict Approval
+                                </Link>
                                 <Button variant="secondary" onClick={handleLogout} className="text-sm">
                                     Sign out
                                 </Button>
