@@ -6,6 +6,7 @@ import Register from './pages/auth/Register';
 import UserDashboard from './pages/dashboard/UserDashboard';
 import ApplyLoan from './pages/dashboard/ApplyLoan';
 import LoanDetails from './pages/dashboard/LoanDetails';
+import LoanPrediction from './pages/dashboard/LoanPrediction';
 
 import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -30,6 +31,7 @@ function App() {
             {/* User Dashboard moving to /dashboard */}
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/apply-loan" element={<ApplyLoan />} />
+            <Route path="/predict-loan" element={<LoanPrediction />} />
             <Route path="/loan/:id" element={<LoanDetails />} />
           </Route>
 

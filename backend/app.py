@@ -31,6 +31,10 @@ def create_app():
     app.register_blueprint(document_bp, url_prefix="/api/documents")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(repayment_bp, url_prefix="/api/repayments")
+    
+    # ML Routes
+    from routes.ml_routes import ml_bp
+    app.register_blueprint(ml_bp, url_prefix="/api/ml")
 
     return app
 
