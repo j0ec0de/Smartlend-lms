@@ -161,7 +161,7 @@ export default function AdminLoanDetails() {
                                                         const response = await api.get(`/documents/view/${doc.id}`, {
                                                             responseType: 'blob'
                                                         });
-                                                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                                                        const url = window.URL.createObjectURL(response.data);
                                                         window.open(url, '_blank');
                                                     } catch (e) {
                                                         console.error(e);
