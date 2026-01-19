@@ -1,6 +1,8 @@
 import pickle
 import os
 import numpy as np
+from extensions import db
+from models.prediction_log import PredictionLog
 
 # Set paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -70,9 +72,48 @@ class LoanPredictor:
             prediction = self.model.predict(features_scaled)[0]
             probability = self.model.predict_proba(features_scaled)[0][1]
 
+            # Explainability: Calculate contributions
+            # Coeffs shape is (1, n_features) for binary classification
+            features_list = [
+                'no_of_dependents', 'education', 'self_employed', 'income_annum', 
+                'loan_amount', 'loan_term', 'cibil_score', 
+                'residential_assets_value', 'commercial_assets_value', 
+                'luxury_assets_value', 'bank_asset_value'
+            ]
+            
+            contributions = {}
+            if hasattr(self.model, 'coef_'):
+                coefs = self.model.coef_[0]
+                # feature * weight
+                weighted_features = features_scaled[0] * coefs
+                
+                # Zip and sort by absolute influence
+                for name, weight in zip(features_list, weighted_features):
+                    contributions[name] = round(weight, 4)
+                
+            # Log to Database
+            status_result = "Approved" if prediction == 1 else "Rejected"
+            try:
+                log_entry = PredictionLog(
+                    input_features=data,
+                    status=status_result,
+                    probability=round(probability, 2),
+                    top_factors=contributions
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+                print("Prediction logged to DB.")
+                log_id = log_entry.id # Capture ID
+            except Exception as db_e:
+                print(f"Failed to log prediction: {db_e}")
+                db.session.rollback()
+                log_id = None
+
             return {
-                "status": "Approved" if prediction == 1 else "Rejected",
-                "probability": round(probability, 2)
+                "status": status_result,
+                "probability": round(probability, 2),
+                "factors": contributions,
+                "log_id": log_id 
             }
         except Exception as e:
             return {"error": str(e)}

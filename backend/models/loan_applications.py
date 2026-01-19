@@ -1,5 +1,6 @@
 from extensions import db
 from datetime import datetime
+from models.prediction_log import PredictionLog
 
 class LoanApplication(db.Model):
     __tablename__ = "loan_applications"
@@ -17,6 +18,10 @@ class LoanApplication(db.Model):
     
     risk_category = db.Column(db.String(20), nullable=True)
     ai_confidence_score = db.Column(db.Float, nullable=True)
+    
+    # Link to deep ML log
+    prediction_log_id = db.Column(db.Integer, db.ForeignKey('prediction_logs.id'), nullable=True)
+    prediction_log = db.relationship("PredictionLog", backref="application", lazy=True)
     # Relationships
 
     documents = db.relationship("Document", backref="loan", lazy=True)

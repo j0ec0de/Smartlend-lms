@@ -8,6 +8,7 @@ from models.loan_applications import LoanApplication
 from models.document import Document
 from models.approval import Approval
 from models.loan_repayment import LoanRepayment
+from models.prediction_log import PredictionLog
 
 
 def create_app():
@@ -35,6 +36,10 @@ def create_app():
     # ML Routes
     from routes.ml_routes import ml_bp
     app.register_blueprint(ml_bp, url_prefix="/api/ml")
+
+    # Dashboard Routes
+    from routes.dashboard_routes import dashboard_bp
+    app.register_blueprint(dashboard_bp, url_prefix="/api/admin/dashboard")
 
     return app
 
