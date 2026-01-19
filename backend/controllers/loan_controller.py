@@ -3,6 +3,8 @@ from extensions import db
 from models.loan_applications import LoanApplication
 from models.user import User
 from utils.jwt_utils import get_jwt_identity
+from ml.predictor import predictor
+from models.prediction_log import PredictionLog
 
 def apply_for_loan(data): 
     try:
@@ -39,6 +41,34 @@ def apply_for_loan(data):
             status = "Pending"
         )
 
+        # Run ML Prediction & Link Log
+        try:
+            # Prepare data for predictor
+            pred_data = {
+                "no_of_dependents": data.get("no_of_dependents", 0),
+                "education": data.get("education", "Not Graduate"), # Default fallback
+                "self_employed": data.get("self_employed", "No"),
+                "income_annum": float(monthly_salary or 0) * 12, # Annualize
+                "loan_amount": float(amount or 0),
+                "loan_term": int(tenure_months or 12) / 12, # Years
+                "cibil_score": float(credit_history or 0), # Map credit_history to score
+                "residential_assets_value": float(data.get("assets_value", 0)), # Simplified asset mapping
+                "commercial_assets_value": 0,
+                "luxury_assets_value": 0,
+                "bank_asset_value": 0
+            }
+            
+            # Predict
+            ml_result = predictor.predict(pred_data)
+            
+            if 'log_id' in ml_result and ml_result['log_id']:
+                 new_loan.prediction_log_id = ml_result['log_id']
+                 new_loan.risk_category = ml_result.get('status')
+                 new_loan.ai_confidence_score = ml_result.get('probability')
+
+        except Exception as ml_e:
+            print(f"ML Association failed: {ml_e}")
+
         db.session.add(new_loan)
         db.session.commit()
 
@@ -63,7 +93,8 @@ def get_my_loans():
                 "status": loan.status,
                 "type": loan.loan_type,
                 "date": loan.created_at.isoformat(),
-                "documents": [{"id": d.id, "name": d.file_name, "type": d.file_type} for d in loan.documents]
+                "documents": [{"id": d.id, "name": d.file_name, "type": d.file_type} for d in loan.documents],
+                "ai_analysis": loan.prediction_log.to_dict() if loan.prediction_log else None
             })
         
         return output, 200

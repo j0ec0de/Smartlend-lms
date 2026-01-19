@@ -131,6 +131,37 @@ export default function LoanDetails() {
                             </div>
                         </Card>
 
+                        {/* Application Insights - [NEW] */}
+                        {loan.ai_analysis && (
+                            <Card className="border-l-4 border-l-indigo-500">
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                    <Percent className="text-indigo-600" size={20} /> Application Insights
+                                </h3>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Here is a breakdown of the primary factors influencing your application status.
+                                </p>
+
+                                <div className="space-y-3">
+                                    {loan.ai_analysis.top_factors && Object.entries(loan.ai_analysis.top_factors)
+                                        .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a)) // Sort by influence
+                                        .slice(0, 5) // Top 5
+                                        .map(([factor, weight]) => (
+                                            <div key={factor} className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded">
+                                                <span className="capitalize text-gray-700 font-medium">
+                                                    {factor.replace(/_/g, ' ')}
+                                                </span>
+                                                <span className={`font-mono font-bold ${weight > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {weight > 0 ? '+' : ''}{weight}
+                                                </span>
+                                            </div>
+                                        ))}
+                                </div>
+                                <div className="mt-4 pt-4 border-t text-xs text-gray-500">
+                                    <p>Positive values increase approval chances, while negative values decrease them.</p>
+                                </div>
+                            </Card>
+                        )}
+
                         {/* Repayment Schedule */}
                         {loan.status === 'Approved' && schedule.length > 0 && (
                             <Card>
@@ -239,7 +270,7 @@ export default function LoanDetails() {
                         </Card>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

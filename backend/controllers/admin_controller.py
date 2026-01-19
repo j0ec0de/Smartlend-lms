@@ -22,7 +22,8 @@ def get_all_loans():
                 "status": loan.status,
                 "risk_score": f"Salary: {loan.monthly_salary}, Credit: {loan.credit_history}",
                 "date": loan.created_at.isoformat(),
-                "documents": [{"id": d.id, "name": d.file_name} for d in loan.documents]
+                "documents": [{"id": d.id, "name": d.file_name} for d in loan.documents],
+                "ai_analysis": loan.prediction_log.to_dict() if loan.prediction_log else None
             })
         return output, 200
     except Exception as e:

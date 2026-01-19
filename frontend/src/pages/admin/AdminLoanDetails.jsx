@@ -76,8 +76,8 @@ export default function AdminLoanDetails() {
                             <p className="text-sm text-gray-500">Applicant User ID: {loan.user_id}</p>
                         </div>
                         <span className={`px-3 py-1 text-sm font-semibold rounded-full ${loan.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                                loan.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                    'bg-yellow-100 text-yellow-800'
+                            loan.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
                             }`}>
                             {loan.status}
                         </span>
@@ -101,6 +101,48 @@ export default function AdminLoanDetails() {
                             <p className="text-sm">{tryFormatDate(loan.date)}</p>
                         </div>
                     </div>
+
+                    {/* AI Analysis Section - [NEW] */}
+                    {loan.ai_analysis && (
+                        <div className="mb-8 border-t pt-6">
+                            <h3 className="text-lg font-bold mb-4">AI Analysis</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Card className="p-4 bg-indigo-50 border-indigo-100">
+                                    <span className="text-indigo-600 text-sm font-semibold">Model Confidence</span>
+                                    <div className="mt-2 flex items-baseline">
+                                        <span className="text-3xl font-bold text-indigo-700">
+                                            {(loan.ai_analysis.probability * 100).toFixed(1)}%
+                                        </span>
+                                        <span className="ml-2 text-sm text-indigo-500">
+                                            probability of approval
+                                        </span>
+                                    </div>
+                                    <p className="mt-2 text-xs text-indigo-400">
+                                        Prediction ID: {loan.ai_analysis.id}
+                                    </p>
+                                </Card>
+
+                                <Card className="p-4">
+                                    <span className="text-gray-900 text-sm font-semibold">Top Factors</span>
+                                    <div className="mt-2 space-y-2">
+                                        {loan.ai_analysis.top_factors && Object.entries(loan.ai_analysis.top_factors)
+                                            .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a)) // Sort by influence
+                                            .slice(0, 5) // Top 5
+                                            .map(([factor, weight]) => (
+                                                <div key={factor} className="flex justify-between items-center text-sm">
+                                                    <span className="capitalize text-gray-600">
+                                                        {factor.replace(/_/g, ' ')}
+                                                    </span>
+                                                    <span className={`font-mono font-medium ${weight > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {weight > 0 ? '+' : ''}{weight}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Documents Section - Hidden if no data */}
                     {loan.documents && (
