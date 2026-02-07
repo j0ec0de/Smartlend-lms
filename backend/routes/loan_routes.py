@@ -18,3 +18,17 @@ def apply():
 def list_loans():
     response, status = get_my_loans()
     return jsonify(response), status
+
+@loan_bp.route("/<int:loan_id>", methods=["PUT"])
+@jwt_required
+def update_loan_route(loan_id):
+    from controllers.loan_controller import update_loan
+    response, status = update_loan(loan_id, request.json)
+    return jsonify(response), status
+
+@loan_bp.route("/<int:loan_id>", methods=["DELETE"])
+@jwt_required
+def delete_loan_route(loan_id):
+    from controllers.loan_controller import delete_loan
+    response, status = delete_loan(loan_id)
+    return jsonify(response), status

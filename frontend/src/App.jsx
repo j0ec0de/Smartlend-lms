@@ -5,6 +5,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import UserDashboard from './pages/dashboard/UserDashboard';
 import ApplyLoan from './pages/dashboard/ApplyLoan';
+import EditLoan from './pages/dashboard/EditLoan';
 import LoanDetails from './pages/dashboard/LoanDetails';
 import LoanPrediction from './pages/dashboard/LoanPrediction';
 
@@ -31,6 +32,7 @@ function App() {
             {/* User Dashboard moving to /dashboard */}
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/apply-loan" element={<ApplyLoan />} />
+            <Route path="/edit-loan/:id" element={<EditLoan />} />
             <Route path="/predict-loan" element={<LoanPrediction />} />
             <Route path="/loan/:id" element={<LoanDetails />} />
           </Route>

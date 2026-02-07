@@ -92,11 +92,90 @@ def get_my_loans():
                 "amount": loan.amount,
                 "status": loan.status,
                 "type": loan.loan_type,
+                "tenure_months": loan.tenure_months,
+                "interest_rate": loan.interest_rate,
                 "date": loan.created_at.isoformat(),
                 "documents": [{"id": d.id, "name": d.file_name, "type": d.file_type} for d in loan.documents],
-                "ai_analysis": loan.prediction_log.to_dict() if loan.prediction_log else None
+                "ai_analysis": loan.prediction_log.to_dict() if loan.prediction_log else None,
+                "monthly_salary": loan.monthly_salary,
+                "credit_history": loan.credit_history
             })
         
         return output, 200
     except Exception as e:
+        return {"error": str(e)}, 500
+
+def update_loan(loan_id, data):
+    try:
+        current_user = get_jwt_identity()
+        loan = LoanApplication.query.get(loan_id)
+        
+        if not loan:
+             return {"error": "Loan not found"}, 404
+             
+        if loan.user_id != current_user.id:
+             return {"error": "Unauthorized"}, 403
+             
+        if loan.status != "Pending":
+             return {"error": "Cannot edit a loan that is not pending"}, 400
+             
+        # Update fields
+        loan.loan_type = data.get("loan_type", loan.loan_type)
+        loan.amount = data.get("amount", loan.amount)
+        loan.tenure_months = data.get("tenure_months", loan.tenure_months)
+        loan.interest_rate = data.get("interest_rate", loan.interest_rate)
+        loan.monthly_salary = data.get("monthly_salary", loan.monthly_salary)
+        loan.credit_history = data.get("credit_history", loan.credit_history)
+
+        # Simple re-validation (optional but good)
+        if loan.monthly_salary and loan.credit_history:
+            score = (float(loan.monthly_salary) / 1000) + (float(loan.credit_history) * 2)
+            if score < 70:
+                 return {
+                    "message": "Loan updates rejected based on risk assessment",
+                    "score": score
+                }, 400
+        
+        db.session.commit()
+        return {"message": "Loan updated successfully", "loan": {
+            "id": loan.id,
+            "amount": loan.amount,
+            "status": loan.status,
+            "type": loan.loan_type
+        }}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
+
+def delete_loan(loan_id):
+    try:
+        current_user = get_jwt_identity()
+        loan = LoanApplication.query.get(loan_id)
+
+        if not loan:
+             return {"error": "Loan not found"}, 404
+             
+        if loan.user_id != current_user.id:
+             return {"error": "Unauthorized"}, 403
+             
+        # Optional: restrict to Pending
+        if loan.status != "Pending":
+             return {"error": "Cannot delete a loan that has been processed"}, 400
+             
+        # Custom Cascade Delete for SQLite/DBs without cascade configured
+        from models.document import Document
+        from models.approval import Approval
+        from models.loan_repayment import LoanRepayment
+
+        # Delete dependence
+        Document.query.filter_by(loan_id=loan.id).delete()
+        Approval.query.filter_by(loan_id=loan.id).delete()
+        LoanRepayment.query.filter_by(loan_id=loan.id).delete()
+             
+        db.session.delete(loan)
+        db.session.commit()
+        return {"message": "Loan deleted successfully"}, 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Delete failed: {e}") # Debug log
         return {"error": str(e)}, 500

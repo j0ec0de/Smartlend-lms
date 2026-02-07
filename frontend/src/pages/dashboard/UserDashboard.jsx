@@ -5,7 +5,7 @@ import Navbar from '../../components/layout/Navbar';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { Plus, FileText, Clock } from 'lucide-react';
+import { Plus, FileText, Clock, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext'; // Added import
 
 export default function UserDashboard() {
@@ -30,6 +30,18 @@ export default function UserDashboard() {
             console.error("Failed to fetch loans", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (loanId) => {
+        if (!window.confirm("Are you sure you want to delete this loan application?")) return;
+
+        try {
+            await api.delete(`/loans/${loanId}`);
+            setLoans(loans.filter(l => l.id !== loanId));
+        } catch (error) {
+            console.error("Failed to delete loan", error);
+            alert("Failed to delete loan");
         }
     };
 
@@ -109,12 +121,28 @@ export default function UserDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2">
-                                    <Link to={`/loan/${loan.id}`} className="flex-1">
+                                <div className="flex flex-col gap-2">
+                                    <Link to={`/loan/${loan.id}`} className="w-full">
                                         <Button variant="secondary" className="w-full text-sm">
                                             View Details
                                         </Button>
                                     </Link>
+                                    {['Pending', 'pending'].includes(loan.status) && (
+                                        <div className="flex gap-2">
+                                            <Link to={`/edit-loan/${loan.id}`} className="flex-1">
+                                                <Button variant="ghost" className="w-full text-sm border border-gray-300 flex items-center justify-center gap-1">
+                                                    <Edit size={14} /> Edit
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="danger"
+                                                className="flex-1 text-sm flex items-center justify-center gap-1"
+                                                onClick={() => handleDelete(loan.id)}
+                                            >
+                                                <Trash2 size={14} /> Delete
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </Card>
                         ))}
