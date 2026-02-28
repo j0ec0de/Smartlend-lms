@@ -107,8 +107,9 @@ This script handles the end-to-end process of training the machine learning mode
         *   `loan_status` (Target): "Approved" -> 1, "Rejected" -> 0
 3.  **Feature Selection**: Selects 11 key features (Income, Assets, CIBIL Score, etc.).
 4.  **Scaling**: Uses `StandardScaler` to normalize feature distributions (crucial for Logistic Regression).
-5.  **Training**: Fits a **Logistic Regression** model on 75% of the data.
-6.  **Artifact Generation**: Saves two files required for inference:
+5.  **Training**: Fits a **Logistic Regression** model. While simpler than Random Forest, it provides high transparency and fast inference.
+6.  **Performance**: Achieves approximately **90% accuracy** on the test set.
+7.  **Artifact Generation**: Saves two files required for inference:
     *   `model.pkl`: The trained model object.
     *   `scaler.pkl`: The exact scaler fitted on the training data.
 

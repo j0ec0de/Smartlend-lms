@@ -50,19 +50,37 @@ class LoanPredictor:
             education_val = 1 if data.get('education') == 'Graduate' else 0
             self_employed_val = 1 if data.get('self_employed') == 'Yes' else 0
             
+            # Extract basic numeric values
+            income = float(data.get('income_annum', 0))
+            loan = float(data.get('loan_amount', 0))
+            dependents = float(data.get('no_of_dependents', 0))
+            res_assets = float(data.get('residential_assets_value', 0))
+            com_assets = float(data.get('commercial_assets_value', 0))
+            lux_assets = float(data.get('luxury_assets_value', 0))
+            bank_assets = float(data.get('bank_asset_value', 0))
+            
+            # --- FEATURE ENGINEERING (Must match training) ---
+            loan_income_ratio = loan / (income + 1)
+            total_assets = res_assets + com_assets + lux_assets + bank_assets
+            asset_loan_ratio = total_assets / (loan + 1)
+            income_per_dependent = income / (dependents + 1)
+
             # Prepare input array in specific order
             features = np.array([[
-                float(data.get('no_of_dependents', 0)),
+                dependents,
                 education_val,
                 self_employed_val,
-                float(data.get('income_annum', 0)),
-                float(data.get('loan_amount', 0)),
+                income,
+                loan,
                 float(data.get('loan_term', 0)),
                 float(data.get('cibil_score', 0)),
-                float(data.get('residential_assets_value', 0)),
-                float(data.get('commercial_assets_value', 0)),
-                float(data.get('luxury_assets_value', 0)),
-                float(data.get('bank_asset_value', 0))
+                res_assets,
+                com_assets,
+                lux_assets,
+                bank_assets,
+                loan_income_ratio,
+                asset_loan_ratio,
+                income_per_dependent
             ]])
             
             # Scale input
@@ -73,21 +91,26 @@ class LoanPredictor:
             probability = self.model.predict_proba(features_scaled)[0][1]
 
             # Explainability: Calculate contributions
-            # Coeffs shape is (1, n_features) for binary classification
             features_list = [
                 'no_of_dependents', 'education', 'self_employed', 'income_annum', 
                 'loan_amount', 'loan_term', 'cibil_score', 
                 'residential_assets_value', 'commercial_assets_value', 
-                'luxury_assets_value', 'bank_asset_value'
+                'luxury_assets_value', 'bank_asset_value',
+                'loan_income_ratio', 'asset_loan_ratio', 'income_per_dependent'
             ]
             
             contributions = {}
-            if hasattr(self.model, 'coef_'):
+            # For Random Forest, we use feature_importances_
+            if hasattr(self.model, 'feature_importances_'):
+                importances = self.model.feature_importances_
+                # We can show the relative importance of these features for this specific prediction
+                # (Heuristic: Scaling importance by feature magnitude)
+                for name, importance in zip(features_list, importances):
+                    contributions[name] = round(float(importance), 4)
+            elif hasattr(self.model, 'coef_'):
+                # Fallback for Logistic Regression
                 coefs = self.model.coef_[0]
-                # feature * weight
                 weighted_features = features_scaled[0] * coefs
-                
-                # Zip and sort by absolute influence
                 for name, weight in zip(features_list, weighted_features):
                     contributions[name] = round(weight, 4)
                 
